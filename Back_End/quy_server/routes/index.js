@@ -3,6 +3,7 @@ var router = express.Router();
 var mysql = require('mysql');
 var session = require('express-session')
 var cors = require('cors')
+var multer  = require('multer')
 /* GET home page. */
 var con = mysql.createConnection({
   host: "localhost",
@@ -10,6 +11,18 @@ var con = mysql.createConnection({
   password : '',
   database : 'dbcaycanh'
 });
+// var storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, './public/uploads')
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+//     cb(null, file.originalname + '-' + uniqueSuffix)
+//   }
+// })
+
+
+// var upload = multer({ storage: storage })
 con.connect();
 router.get('/getdata', function(req, res, next) {
   // Website you wish to allow to connect
@@ -29,8 +42,10 @@ router.get('/getdata', function(req, res, next) {
       res.send(result);
     });
 });
+
 router.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -60,7 +75,6 @@ router.post('/add',cors(),  function(req, res, next) {
 });
 
 router.delete('/delete', cors(),  function(req, res, next) {
-  // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 
   // Request methods you wish to allow

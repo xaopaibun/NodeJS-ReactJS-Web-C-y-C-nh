@@ -4,6 +4,9 @@ var mysql = require('mysql');
 var session = require('express-session')
 var cors = require('cors')
 var multer  = require('multer')
+const nodemailer =  require('nodemailer');
+var md5 = require('md5');
+ 
 /* GET home page. */
 var con = mysql.createConnection({
   host: "localhost",
@@ -74,7 +77,7 @@ router.post('/add',cors(),  function(req, res, next) {
     });
 });
 
-router.delete('/delete', cors(),  function(req, res, next) {
+router.post('/delete', cors(),  function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 
   // Request methods you wish to allow
@@ -87,11 +90,34 @@ router.delete('/delete', cors(),  function(req, res, next) {
   // to the API (e.g. in case you use sessions)
   res.setHeader('Access-Control-Allow-Credentials', true);
   let id = req.body.id;
+  console.log(id);
    con.query("DELETE FROM `caycanh` WHERE `caycanh`.`id` = "+id+"", (err, result)  => {
      if (err)   res.send('Xóa Lỗi rồi', err);
      res.send('Xóa dữ liệu Thành công');
    });
 });
+router.put('/put', cors(),  function(req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  let id = req.body.id;
+  let ten = req.body.name;
+    let img = req.body.img;
+    let Gia = req.body.Gia;
+   con.query("UPDATE `caycanh` SET `name` = '"+ten +"', `img` = '"+img+"', `Gia` = '"+Gia+"' WHERE `caycanh`.`id` = "+id+"", (err, result)  => {
+     if (err)   res.send('Sửa Lỗi rồi', err);
+     res.send('Sửa dữ liệu Thành công');
+   });
+});
+
 
 
 
@@ -104,6 +130,63 @@ router.get('/lay', function(req, res, next) {
   
   res.send(req.session.quy);
 
+});
+router.post('/send-mail', function(req, res) {
+
+  var transporter =  nodemailer.createTransport({ 
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+          user: 'vanquy33338888@gmail.com',
+          pass: '01652343938'
+      },
+      tls: {
+         
+          rejectUnauthorized: false
+      }
+  });
+
+  var mainOptions = { 
+      from: 'Phạm Jin',
+      to: req.body.mail,
+      subject: 'Test Thôi',
+      text: 'Đại học điẹn lực',
+    
+  }
+  transporter.sendMail(mainOptions, function(err, info){
+      if (err) {
+          console.log(err);
+          req.flash('mess', 'Lỗi gửi mail: '+err); 
+          res.redirect('/');
+      } else {
+          console.log('Message sent: ' +  info.response);
+          req.flash('mess', 'Một email đã được gửi đến tài khoản của bạn'); 
+          res.redirect('/');
+      }
+  });
+});
+
+router.post('/dangky',cors(),  function(req, res, next) {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  // Request methods you wish to allow
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+  // Request headers you wish to allow
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  res.setHeader('Access-Control-Allow-Credentials', true);  
+   let gmail = req.body.gmail;
+   let sdt = req.body.sdt;
+   let pass = md5(req.body.pass);
+   con.query("INSERT INTO `user` (`gmail`, `sdt`, `matkhau`) VALUES ('"+gmail+"', '"+ sdt+"', '"+ pass+"')", (err, result)  => {
+     if (err)   res.send('lỗi', err);
+     res.send(result);
+   });
 });
 
 module.exports = router;
